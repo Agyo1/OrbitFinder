@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <title>Orbit Finder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body onLoad="startPage()">
+    <div class="container">
+        <h1 class="header">Orbit Finder<sup><a href="#disclaimer" id="link-style">*</a></sup></h1>
+        <ul class="flexbox">
+            <div class="box centered">
+                <h3 class="header">Kepler's 3rd Law</h3>
+                <p>The period it takes for a planet to orbit the sun squared can be described as the distance to the sun (in astronomicl units) cubed.</p>
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEsAAAAhBAMAAABjD0vlAAAAG1BMVEX///9fX1+fn5+/v78fHx8/Pz9/f3/f398AAABr2A0/AAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAQ9JREFUOI3FkjFvwjAQhZ/t4DCmKo0Yo0hQxgwdOgaaHxAhUXUMDBGjpVIpY0Slws+uxYDP5ILoUl6WvOTz+d3pgL8prN/Z7ypdG2I1gorDvqBzYl+gWw7bQR76Lb0nv2ZdgcyzAzYbpgvfT/hi2EXUhWUPpr3MmoemF60l9mG0gmyJlWkacVjqt9Ycj2w4GW/4NP+g8Om5XrJ/1nXsjJZz0xiGGlTyxzlhhzxMzoeKk97s6wj4dtinKNFU3WJqD9USb5f2lcHEAZoOssmwzbpYkPvjnwGFa+icbRjZyOT4CIpEddUizAwpV5ggYTBdqrF01cJ9/MhQwMNGkPF629Qv0bfbvgJ2GTv6mN+E3UO/jCokrR+UOhcAAAAASUVORK5CYII=" alt="keplers_3rd_law">
+                <hr>
+                <form>
+                    <label for="planetDropdown">Select a planet:</label>
+                    <select id="planetDropdown">
+                        <option value="Mercury">Mercury</option>
+                        <option value="Venus">Venus</option>
+                        <option value="Earth">Earth</option>
+                        <option value="Mars" selected>Mars</option>
+                        <option value="Jupiter">Jupiter</option>
+                        <option value="Saturn">Saturn</option>
+                        <option value="Uranus">Uranus</option>
+                        <option value="Neptune">Neptune</option>
+                    </select>
+                    <button type="button" onclick="findPeriod()">Submit</button>
+                </form>
+                <p id="au_output"></p>
+                <p id="period_output"></p>
+                <p id="days_output"></p>
+                <hr>
+                <form>
+                    <label for="departureDropdown">Select a departure planet:</label>
+                    <select id="departureDropdown">
+                        <option value="Mercury">Mercury</option>
+                        <option value="Venus">Venus</option>
+                        <option value="Earth" selected>Earth</option>
+                        <option value="Mars">Mars</option>
+                        <option value="Jupiter">Jupiter</option>
+                        <option value="Saturn">Saturn</option>
+                        <option value="Uranus">Uranus</option>
+                        <option value="Neptune">Neptune</option>
+                    </select>
+                    <br>
+                    <label for="arrivalDropdown">Select an arrival planet:</label>
+                    <select id="arrivalDropdown">
+                        <option value="Mercury">Mercury</option>
+                        <option value="Venus">Venus</option>
+                        <option value="Earth">Earth</option>
+                        <option value="Mars" selected>Mars</option>
+                        <option value="Jupiter">Jupiter</option>
+                        <option value="Saturn">Saturn</option>
+                        <option value="Uranus">Uranus</option>
+                        <option value="Neptune">Neptune</option>
+                    </select>
+                    <br>
+                    <button type="button" onclick="findPeriodToPlanet()">Submit</button>
+                </form>
+                <p>$$A=\frac{r_1+r_2}{2}$$</p>
+                <sub>A=<a href="https://astronomy.swin.edu.au/cosmos/s/Semi-major+Axis" target="_blank">Semi Major Axis</a></sub>
+                <p id="inputtedAU"></p>
+                <p id="outputAU"></p>
+                <sub>Plug into Kepler's third law.</sub>
+                <p id="keplerAU"></p>
+                <p id="tOutput"></p>
+                <sub>T=time from one planet to another.</sub>
+                <p id="tFinal"></p>
+            </div>
+            <div class="box centered">
+                <h3 class="header">When to Leave</h3>
+                <p>This angle measurement is used to show the angle formed when a line is drawn from the departure planet and arrival planet to the sun.</p>
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKMAAABFBAMAAADUX0ssAAAAG1BMVEX///9fX19/f3/f398/Pz+/v78fHx+fn58AAADuOCEeAAAAAXRSTlMAQObYZgAAAAlwSFlzAAAOxAAADsQBlSsOGwAAA/pJREFUWIXtl8tT2zAQh9eWHzm6LY8cU4YpOaYzlOZo0gA5ph2m5BgehRwNhZAjARL0Z3dX8kOJ7EROO9Mp099grJE3n1bWSt4FeA2yGvjPiah52z6St/U5G3//gG4fDZGCUiekFcFuiLcJjGqzNmvwgQZ2g6RjxKeX9Me7OUSbfn3MCbmDVwvNI/AnsxM5h54YZCvpOfwJwGvAqo0c5HdyYlMg+3gNAS5BXplwDs2QGl7i1Dm6TB42C+cNhGRP2OiBO8ZbVZ0Qm+JvaTzw+7LHR59tTmPkEN1+hiTWLdiP5FdNnfcLDvUgmleyx8H5Os+Qv2BOLUXC4As57QhkqNg0EVeXyO34V3hVyO5bDrLZyJD1aWQF4KFPMOorNlXkV2VHT5p/ouYkbsxrCBnS4uNNHF1D0sOBdLsSpb2x37reKEio8x8JUrF3Oakm2k4amdAJC5BnCpJ1BjzQkTYuuB/HtJVxBrUC5ERB9s5tPtaRDkaCNY3x/aSX5W4ceqAg2bRB20hbHg+X1hvLtp8O5fMCJ0V4x0gKP4weGUSEvEThrYLD9p7mkdZzAdJVkB6ZWw9WGpe0KoREm2q8LG6KJN+XIivkmdv3xYasZTYe2vDGPLI5e7Is8NINGc2oo5wwzpPcpLNIdQFnpL5Lm96l3QU8sJj6ouwJNJNwzN4lbal8pHSfiUjuYFjcAOwFdEAqNqfsNGknR9GCsJRxud3h0za6M767pmC6uD+cOVmP2+k2tBPffF6IbKW+4PV5S4Svu1MQxRgQ8g34+Ingl3knOqR73FRetNxmWA5ZKfCsrE1JDyyDmSh6a2ATf3sMlYTxYh2UQdrBchsMujLIPaM3L7INU23m9q61E8VTLjFz0+Et8zD6aj76KxXPNP+owstLH0Bb8X9Pt4cig2Vr4hzXy4DywrpiFOJ9GMF9bhlQXpj/U2KAyT87zCsDVhB+TShN6wUi49HLgBWEX3NiYV7ALnLKgFW0gV4+J3mBXgasKOcFP+eypZUBio5b8L5tOINeiCybakm9DMjEwt5113Dt3DNirVMtqZcBmewu1hOsKMOc0e3gHW785y6VVVqCrcgREVuUB8+KYWJZoby82l2E9CkUGDc7vHFRKrQ89WAREhM3Kl6MiBiXDZEyj/qLlke8R3tqhsTaw5HuZWVA3siPsnhZ6iEdQzyypHvWorjEIwWaBqmHWBce+ZKllQGqKK832VnelCbeYJKllQGq0EOjsLSwHiffqiAOpfkyQNVoH/ZCAyS7Qk8x8fcCcVDOlwGq6if7RwZEgN3WySnOlLXvNro5ZYCijhGP9HlHMNybZWWA0fYuJbeogFxdopD7s3J++zOnifOiUPivv69fs7H8+rpI9YEAAAAASUVORK5CYII=" alt="leaveEquation">
+                <hr>
+                <form>
+                    <label for="angleDepartureDropdown">Select a departure planet:</label>
+                    <select id="angleDepartureDropdown">
+                        <option value="Mercury">Mercury</option>
+                        <option value="Venus">Venus</option>
+                        <option value="Earth" selected>Earth</option>
+                        <option value="Mars">Mars</option>
+                        <option value="Jupiter">Jupiter</option>
+                        <option value="Saturn">Saturn</option>
+                        <option value="Uranus">Uranus</option>
+                        <option value="Neptune">Neptune</option>
+                    </select>
+                    <br>
+                    <label for="angleArrivalDropdown">Select an arrival planet:</label>
+                    <select id="angleArrivalDropdown">
+                        <option value="Mercury">Mercury</option>
+                        <option value="Venus">Venus</option>
+                        <option value="Earth">Earth</option>
+                        <option value="Mars" selected>Mars</option>
+                        <option value="Jupiter">Jupiter</option>
+                        <option value="Saturn">Saturn</option>
+                        <option value="Uranus">Uranus</option>
+                        <option value="Neptune">Neptune</option>
+                    </select>
+                    <br>
+                    <button type="button" onclick="findLeaveAngle()">Submit</button>
+                    <p id="equation_plugged_in"></p>
+                    <p id="phase_angle_output"></p>
+                </form>
+                <p id="angleOutput"></p>
+            </div>
+        </ul>
+        <div class="box" style="width: 97vw">
+            <h3 class="header">Data</h3>
+                <table>
+                    <tr class="header-row">
+                        <th>Name</th>
+                        <th>Distance to Sun (AU)</th>
+                        <th>Radius</th>
+                    </tr>
+                    <tr>
+                        <td>Sun</td>
+                        <td>0 AU</td>
+                        <td>695700.0 km</td>
+                    </tr>
+                    <tr class="gray-row">
+                        <td>Mercury</td>
+                        <td>0.39 AU</td>
+                        <td>2439.5 km</td>
+                    </tr>
+                    <tr>
+                        <td>Venus</td>
+                        <td>0.72 AU</td>
+                        <td>6052.0 km</td>
+                    </tr>
+                    <tr class="gray-row">
+                        <td>Earth</td>
+                        <td>1.0 AU</td>
+                        <td>6378.0 km</td>
+                    </tr>
+                    <tr>
+                        <td>Mars</td>
+                        <td>1.52 AU</td>
+                        <td>3396.0 km</td>
+                    </tr>
+                    <tr class="gray-row">
+                        <td>Jupiter</td>
+                        <td>5.2 AU</td>
+                        <td>71492.0 km</td>
+                    </tr>
+                    <tr>
+                        <td>Saturn</td>
+                        <td>9.54 AU</td>
+                        <td>60268.0 km</td>
+                    </tr>
+                    <tr class="gray-row">
+                        <td>Uranus</td>
+                        <td>19.2 AU</td>
+                        <td>25559.0 km</td>
+                    </tr>
+                    <tr>
+                        <td>Neptune</td>
+                        <td>30.06 AU</td>
+                        <td>24764.0 km</td>
+                    </tr>
+                    
+                </table>
+                <sub>Data from <a href="https://www.jpl.nasa.gov/edu/pdfs/scaless_reference.pdf">https://www.jpl.nasa.gov/edu/pdfs/scaless_reference.pdf</a></sub>
+        </div>
+        <div class="box centered" style="width: 97vw">
+            <h3 class="header" id="disclaimer">Disclaimer</h3>
+            <p>Some of the information on this page may not be accurate.</p>
+            <p>This is not an issue with the math, it is because of the values from the table.</p>
+            <p>I wanted to keep the values relatively small so that is why the data is not the most accurate.</p>
+        </div>
+        <div class="centered">
+            <iframe src="https://www.desmos.com/scientific" frameborder="0" style="width:33vw; height: 50vh"></iframe>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
